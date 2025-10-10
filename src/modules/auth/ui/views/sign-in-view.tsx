@@ -1,5 +1,6 @@
 "use client";
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import z from "zod";
 import Link from "next/link";
 import Image from "next/image";
@@ -18,9 +19,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Alert, AlertTitle } from "@/components/ui/alert";
-import { OctagonAlertIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import ErrorAlert from "../error-alert";
+import SocialAuth from "../social-auth";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -61,6 +61,7 @@ const SignInView = () => {
       );
     });
   };
+
   return (
     <div className="flex flex-col gap-6">
       <Card className="overflow-hidden p-0">
@@ -112,12 +113,7 @@ const SignInView = () => {
                     )}
                   />
                 </div>
-                {!!error && (
-                  <Alert className="bg-destructive/10 border-none">
-                    <OctagonAlertIcon className="!text-destructive h-4 w-4" />
-                    <AlertTitle>{error}</AlertTitle>
-                  </Alert>
-                )}
+                {!!error && <ErrorAlert errorMessage={error} />}
                 <Button type="submit" disabled={isPending}>
                   {isPending ? "Signing in..." : "Sign In"}
                 </Button>
@@ -126,14 +122,7 @@ const SignInView = () => {
                     Or continue with
                   </span>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <Button variant="outline" type="button" className="w-full">
-                    Google
-                  </Button>
-                  <Button variant="outline" type="button" className="w-full">
-                    Github
-                  </Button>
-                </div>
+                <SocialAuth />
                 <div className="text-center text-sm">
                   Don&apos;t have an account?
                   <Link
