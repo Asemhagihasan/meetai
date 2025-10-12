@@ -23,7 +23,6 @@ const Page = async () => {
   }
 
   const queryCleint = getQueryClient();
-
   void queryCleint.prefetchQuery(trpc.agents.getMany.queryOptions());
 
   return (
