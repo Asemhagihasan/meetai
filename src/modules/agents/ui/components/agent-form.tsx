@@ -32,10 +32,35 @@ export const AgentForm = ({ onSuccess, onCancel, initialValues }: Props) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
+  const form = useForm<agentsInsertSchemaType>({
+    resolver: zodResolver(agentsInsertSchema),
+    defaultValues: {
+      name: initialValues?.name || "",
+      instructions: initialValues?.instructions || "",
+    },
+  });
+
+  const isEdit = !!initialValues?.id;
+
   const createAgent = useMutation(
     trpc.agents.create.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries(trpc.agents.getMany.queryOptions());
+        queryClient.invalidateQueries(trpc.agents.getMany.queryOptions({}));
+        onSuccess?.();
+        toast.success(
+          isEdit ? "Agent updated " : "Agent created " + "successfully",
+        );
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    }),
+  );
+
+  const updateAgent = useMutation(
+    trpc.agents.update.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(trpc.agents.getMany.queryOptions({}));
 
         if (initialValues?.id) {
           queryClient.invalidateQueries(
@@ -50,24 +75,15 @@ export const AgentForm = ({ onSuccess, onCancel, initialValues }: Props) => {
     }),
   );
 
-  const form = useForm<agentsInsertSchemaType>({
-    resolver: zodResolver(agentsInsertSchema),
-    defaultValues: {
-      name: initialValues?.name || "",
-      instructions: initialValues?.instructions || "",
-    },
-  });
-
-  const isEdit = !!initialValues?.id;
-  const isPending = createAgent.isPending;
-
   const onSubmit = async (data: agentsInsertSchemaType) => {
     if (isEdit) {
-      console.log("update agent", data);
+      updateAgent.mutate({ ...data, id: initialValues.id });
     } else {
       createAgent.mutate(data);
     }
   };
+
+  const isPending = createAgent.isPending || updateAgent.isPending;
 
   return (
     <Form {...form}>
