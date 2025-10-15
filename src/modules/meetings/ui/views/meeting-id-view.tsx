@@ -14,6 +14,10 @@ import ErrorState from "@/components/error-state";
 import LoadingState from "@/components/loading-state";
 import { MeetingIdViewHeader } from "../components/meeting-id-view-header";
 import UpdateMeetingDialog from "../components/update-meeting-dialog";
+import UpcomingState from "../components/upcoming-state";
+import ActiveState from "../components/active-state";
+import CancelledState from "../components/cancelled-state";
+import ProcessingState from "../components/processing-state";
 
 interface Props {
   meetingId: string;
@@ -28,7 +32,7 @@ export const MeetingIdView = ({ meetingId }: Props) => {
     "Are you sure?",
     "The following actions cannot be undone.",
   );
-  const { data } = useSuspenseQuery(
+  const { data: meeting } = useSuspenseQuery(
     trpc.meetings.getOne.queryOptions({ id: meetingId }),
   );
 
@@ -51,22 +55,39 @@ export const MeetingIdView = ({ meetingId }: Props) => {
     }
   };
 
+  const isActive = meeting.status === "active";
+  const isUpcoming = meeting.status === "upcoming";
+  const isComplated = meeting.status === "completed";
+  const isProcessing = meeting.status === "processing";
+  const isCancelled = meeting.status === "cancelled";
+
   return (
     <>
       <UpdateMeetingDialog
         open={UpdateMeetingDialogOpen}
         onOpenChange={setUpdateMeetingDialogOpen}
-        initialValues={data}
+        initialValues={meeting}
       />
       <RemoveConfirmation />
       <div className="flex flex-1 flex-col gap-y-4 px-4 py-4 md:px-8">
         <MeetingIdViewHeader
           meetingId={meetingId}
-          meetingName={data?.name}
+          meetingName={meeting?.name}
           onEdit={() => setUpdateMeetingDialogOpen(true)}
           onRemove={handleRemoveMeeting}
         />
-        {data?.name}
+
+        {isComplated && <div>Complated</div>}
+        {isProcessing && <ProcessingState />}
+        {isCancelled && <CancelledState />}
+        {isActive && <ActiveState meetingId={meetingId} />}
+        {isUpcoming && (
+          <UpcomingState
+            meetingId={meetingId}
+            onCancelMeeting={() => {}}
+            isCancelling={false}
+          />
+        )}
       </div>
     </>
   );
