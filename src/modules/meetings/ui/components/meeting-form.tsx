@@ -124,7 +124,7 @@ export const MeetingForm = ({ onSuccess, onCancel, initialValues }: Props) => {
             control={form.control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Name</FormLabel>
+                <FormLabel>Agent</FormLabel>
                 <FormControl>
                   <CommandSelect
                     options={(agents?.data?.items || []).map((agent) => ({
